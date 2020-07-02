@@ -3,6 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
+const encrypt = require("mongoose-encryption");
 
 
 const app = express();
@@ -17,25 +18,25 @@ app.use(bodyParser.urlencoded({
 mongoose.connect("mongodb://localhost:27017/userDB", {useUnifiedTopology:true,useNewUrlParser: true});
 
 
-const userSchema = {
+const userSchema = new mongoose.Schema({
     email: String,
     password: String
-};
+});
 
+const secret = "my_secret";
+userSchema.plugin(encrypt, { secret: secret, encryptedFields: ["password"] }); //encryption only for the password field
 
 const User = new mongoose.model("User", userSchema);
-
-
 
 app.get("/", function(req, res){
     res.render("home");
   });
 
-  app.get("/login", function(req, res){
+app.get("/login", function(req, res){
     res.render("login");
   });
 
-  app.get("/register", function(req, res){
+app.get("/register", function(req, res){
     res.render("register");
   });
 
@@ -72,7 +73,6 @@ app.post("/login",function(req,res){
         }
     });
 });
-
 
 
 app.listen(8080, function() {
